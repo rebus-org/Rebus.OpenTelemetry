@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+  <PackageReference Include="Autofac" Version="5.1.2" />
+  <PackageReference Include="Rebus.Autofac" Version="7.0.0" />
+  <PackageReference Include="Rebus.Microsoft.Extensions.Logging" Version="1.0.1" />
+  <PackageReference Include="Rebus.RabbitMQ" Version="6.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rebus.OpenTelemetry\Rebus.OpenTelemetry.csproj" />
+  </ItemGroup>
+
+  </Project>
