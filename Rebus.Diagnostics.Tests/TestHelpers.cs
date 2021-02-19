@@ -10,7 +10,7 @@ namespace Rebus.Diagnostics.Tests
         {
             ActivitySource.AddActivityListener(new ActivityListener
             {
-                ShouldListenTo = source => source.Name == Constants.ActivitySourceName,
+                ShouldListenTo = source => source.Name == RebusDiagnosticConstants.ActivitySourceName,
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData
             });
         }

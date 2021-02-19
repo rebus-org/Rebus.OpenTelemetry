@@ -2,7 +2,7 @@
 
 namespace Rebus.Diagnostics
 {
-    public static class Constants
+    public static class RebusDiagnosticConstants
     {
         public const string TraceStateHeaderName = "rbs-ot-tracestate";
 
@@ -12,7 +12,7 @@ namespace Rebus.Diagnostics
         public const string ActivitySourceName = "Rebus.Diagnostics";
 
         public static readonly ActivitySource ActivitySource = new ActivitySource(ActivitySourceName,
-            typeof(Constants).Assembly.GetName().Version.ToString());
+            typeof(RebusDiagnosticConstants).Assembly.GetName().Version.ToString());
     }
 }
 

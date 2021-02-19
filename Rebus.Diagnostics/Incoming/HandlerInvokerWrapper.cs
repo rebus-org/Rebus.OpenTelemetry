@@ -33,7 +33,7 @@ namespace Rebus.Diagnostics.Incoming
             }
             initialTags["messaging.operation"] = "process";
             
-            using var activity = Constants.ActivitySource.StartActivity($"{_messageType} process", parentActivity.Kind, parentActivity.Context, initialTags);
+            using var activity = RebusDiagnosticConstants.ActivitySource.StartActivity($"{_messageType} process", parentActivity.Kind, parentActivity.Context, initialTags);
             
             await _handlerInvokerImplementation.Invoke();
         }

@@ -47,14 +47,14 @@ namespace Rebus.Diagnostics.Tests.Outgoing
             });
             
             Assert.That(hadActivity, Is.False);
-            Assert.That(headers, Has.No.ContainKey(Constants.TraceStateHeaderName));
+            Assert.That(headers, Has.No.ContainKey(RebusDiagnosticConstants.TraceStateHeaderName));
             Assert.That(callbackWasInvoked, Is.True);
         }
 
         [Test]
         public async Task StartsNewActivityIfThereIsAlreadyAParentActivity()
         {
-            Assume.That(Constants.ActivitySource.HasListeners(), Is.True);
+            Assume.That(RebusDiagnosticConstants.ActivitySource.HasListeners(), Is.True);
             
             var step = new OutgoingDiagnosticsStep();
 
@@ -87,8 +87,8 @@ namespace Rebus.Diagnostics.Tests.Outgoing
             
             Assert.That(hadActivity, Is.True);
             Assert.That(hadExpectedParent, Is.True);
-            Assert.That(transportMessage.Headers, Contains.Key(Constants.TraceStateHeaderName));
-            Assert.That(transportMessage.Headers[Constants.TraceStateHeaderName], Is.Not.Null.And.Not.Empty);
+            Assert.That(transportMessage.Headers, Contains.Key(RebusDiagnosticConstants.TraceStateHeaderName));
+            Assert.That(transportMessage.Headers[RebusDiagnosticConstants.TraceStateHeaderName], Is.Not.Null.And.Not.Empty);
         }
 
         private Dictionary<string, string> GetMessageHeaders(string messageId, string intent)

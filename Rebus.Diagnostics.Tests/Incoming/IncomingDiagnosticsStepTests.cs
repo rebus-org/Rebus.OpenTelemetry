@@ -34,7 +34,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
                 {Headers.Type, "MyType"},
                 {Headers.Intent, Headers.IntentOptions.PublishSubscribe},
                 {Headers.MessageId, "MyMessage"},
-                {Constants.TraceStateHeaderName, activity.Id!}
+                {RebusDiagnosticConstants.TraceStateHeaderName, activity.Id!}
             };
 
             activity.Stop();

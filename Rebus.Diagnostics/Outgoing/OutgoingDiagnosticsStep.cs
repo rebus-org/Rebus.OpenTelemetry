@@ -14,7 +14,7 @@ namespace Rebus.Diagnostics.Outgoing
     [StepDocumentation("Creates a new activity for sending the provided message and passes it along on the message")]
     public class OutgoingDiagnosticsStep : IOutgoingStep
     {
-        private static readonly DiagnosticSource DiagnosticListener = new DiagnosticListener(Constants.ProducerActivityName);
+        private static readonly DiagnosticSource DiagnosticListener = new DiagnosticListener(RebusDiagnosticConstants.ProducerActivityName);
 
         public async Task Process(OutgoingStepContext context, Func<Task> next)
         {
@@ -38,9 +38,9 @@ namespace Rebus.Diagnostics.Outgoing
             
             var headers = context.Load<TransportMessage>().Headers;
 
-            if (!headers.ContainsKey(Constants.TraceStateHeaderName))
+            if (!headers.ContainsKey(RebusDiagnosticConstants.TraceStateHeaderName))
             {
-                headers[Constants.TraceStateHeaderName] = activity.Id;
+                headers[RebusDiagnosticConstants.TraceStateHeaderName] = activity.Id;
             }
         }
 
@@ -54,7 +54,7 @@ namespace Rebus.Diagnostics.Outgoing
             }
 
             Activity? activity = null;
-            if (Constants.ActivitySource.HasListeners())
+            if (RebusDiagnosticConstants.ActivitySource.HasListeners())
             {
 
                 var message = context.Load<TransportMessage>();
@@ -77,7 +77,7 @@ namespace Rebus.Diagnostics.Outgoing
 
                 // TODO: Transport specific tags, like rabbitmq routing key
 
-                activity = Constants.ActivitySource.StartActivity(activityName, activityKind,
+                activity = RebusDiagnosticConstants.ActivitySource.StartActivity(activityName, activityKind,
                     parentActivity.Context, initialTags);
 
                 // TODO: Figure out if this is actually needed now

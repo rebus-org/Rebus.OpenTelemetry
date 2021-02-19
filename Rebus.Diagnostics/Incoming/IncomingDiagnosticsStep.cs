@@ -14,7 +14,7 @@ namespace Rebus.Diagnostics.Incoming
     public class IncomingDiagnosticsStep : IIncomingStep
     {
         private static readonly DiagnosticSource DiagnosticListener =
-            new DiagnosticListener(Constants.ConsumerActivityName);
+            new DiagnosticListener(RebusDiagnosticConstants.ConsumerActivityName);
 
         public async Task Process(IncomingStepContext context, Func<Task> next)
         {
@@ -33,7 +33,7 @@ namespace Rebus.Diagnostics.Incoming
         private static Activity? StartActivity(IncomingStepContext context)
         {
             Activity? activity = null;
-            if (Constants.ActivitySource.HasListeners())
+            if (RebusDiagnosticConstants.ActivitySource.HasListeners())
             {
                 var message = context.Load<TransportMessage>();
 
@@ -51,13 +51,13 @@ namespace Rebus.Diagnostics.Incoming
                     : ActivityKind.Server;
 
                 var activityName = $"{messageType} receive";
-                if (!headers.TryGetValue(Constants.TraceStateHeaderName, out var traceState))
+                if (!headers.TryGetValue(RebusDiagnosticConstants.TraceStateHeaderName, out var traceState))
                 {
-                    activity = Constants.ActivitySource.StartActivity(activityName, activityKind, default(ActivityContext), initialTags);
+                    activity = RebusDiagnosticConstants.ActivitySource.StartActivity(activityName, activityKind, default(ActivityContext), initialTags);
                 }
                 else
                 {
-                    activity = Constants.ActivitySource.StartActivity(activityName, activityKind,
+                    activity = RebusDiagnosticConstants.ActivitySource.StartActivity(activityName, activityKind,
                         traceState, initialTags);
                 }
 

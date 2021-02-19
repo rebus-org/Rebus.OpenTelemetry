@@ -4,7 +4,7 @@ namespace Rebus.Diagnostics.Outgoing
 {
     public class AfterSendMessage
     {
-        public const string EventName = Constants.ProducerActivityName + "." + nameof(AfterSendMessage);
+        public const string EventName = RebusDiagnosticConstants.ProducerActivityName + "." + nameof(AfterSendMessage);
 
         public AfterSendMessage(OutgoingStepContext context) => Context = context;
 

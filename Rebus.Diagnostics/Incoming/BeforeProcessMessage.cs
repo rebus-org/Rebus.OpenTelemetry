@@ -6,7 +6,7 @@ namespace Rebus.Diagnostics.Incoming
 {
     public class BeforeProcessMessage
     {
-        public const string EventName = Constants.ConsumerActivityName + "." + nameof(BeforeProcessMessage);
+        public const string EventName = RebusDiagnosticConstants.ConsumerActivityName + "." + nameof(BeforeProcessMessage);
 
         public BeforeProcessMessage(IncomingStepContext context, Activity? activity)
         {

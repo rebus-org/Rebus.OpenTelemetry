@@ -7,7 +7,7 @@ namespace Rebus.OpenTelemetry.Configuration
     {
         public static TracerProviderBuilder AddRebusCollectors(this TracerProviderBuilder builder)
         {
-            return builder.AddSource(Constants.ActivitySourceName);
+            return builder.AddSource(RebusDiagnosticConstants.ActivitySourceName);
         }
     }
 }
