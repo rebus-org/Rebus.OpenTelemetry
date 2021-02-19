@@ -36,11 +36,11 @@ namespace Rebus.Diagnostics.Outgoing
         {
             if (activity == null) return;
             
-            var headers = context.Load<Message>().Headers;
+            var headers = context.Load<TransportMessage>().Headers;
 
             if (!headers.ContainsKey(Constants.TraceStateHeaderName))
             {
-                headers[Constants.TraceStateHeaderName] = activity.TraceStateString;
+                headers[Constants.TraceStateHeaderName] = activity.Id;
             }
         }
 
@@ -57,10 +57,10 @@ namespace Rebus.Diagnostics.Outgoing
             if (Constants.ActivitySource.HasListeners())
             {
 
-                var message = context.Load<Message>();
+                var message = context.Load<TransportMessage>();
                 var messageType = message.GetMessageType();
 
-                var messageWrapper = new MessageMessageWrapper(message);
+                var messageWrapper = new TransportMessageWrapper(message);
 
 
                 var activityKind = messageWrapper.GetIntentOption() == Headers.IntentOptions.PublishSubscribe

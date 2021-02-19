@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -26,12 +27,15 @@ namespace Rebus.Diagnostics.Tests.Outgoing
         {
             var step = new OutgoingDiagnosticsStep();
 
-            var message = new Message(GetMessageHeaders("id", Headers.IntentOptions.PublishSubscribe), new object());
+            var headers = GetMessageHeaders("id", Headers.IntentOptions.PublishSubscribe);
+            var message = new Message(headers, new object());
+            var transportMessage = new TransportMessage(headers, Array.Empty<byte>());
 
             var destinations = new DestinationAddresses(new List<string> {"MyQueue"});
 
             var context = new OutgoingStepContext(message, AmbientTransactionContext.Current, destinations);
-
+            context.Save(transportMessage);
+            
             var hadActivity = false;
             var callbackWasInvoked = false;
             
@@ -43,7 +47,7 @@ namespace Rebus.Diagnostics.Tests.Outgoing
             });
             
             Assert.That(hadActivity, Is.False);
-            Assert.That(message.Headers, Has.No.ContainKey(Constants.TraceStateHeaderName));
+            Assert.That(headers, Has.No.ContainKey(Constants.TraceStateHeaderName));
             Assert.That(callbackWasInvoked, Is.True);
         }
 
@@ -54,13 +58,18 @@ namespace Rebus.Diagnostics.Tests.Outgoing
             
             var step = new OutgoingDiagnosticsStep();
 
-            var message = new Message(GetMessageHeaders("id", Headers.IntentOptions.PublishSubscribe), new object());
+            var headers = GetMessageHeaders("id", Headers.IntentOptions.PublishSubscribe);
+
+            var message = new Message(headers, new object());
+            var transportMessage = new TransportMessage(headers, Array.Empty<byte>());
 
             var destinations = new DestinationAddresses(new List<string> {"MyQueue"});
 
             var context = new OutgoingStepContext(message, AmbientTransactionContext.Current, destinations);
+            context.Save(transportMessage);
 
             using var activity = new Activity("MyActivity");
+            activity.SetIdFormat(ActivityIdFormat.W3C);
             activity.Start();
             
             Assume.That(activity, Is.SameAs(Activity.Current));
@@ -78,7 +87,8 @@ namespace Rebus.Diagnostics.Tests.Outgoing
             
             Assert.That(hadActivity, Is.True);
             Assert.That(hadExpectedParent, Is.True);
-            Assert.That(message.Headers, Contains.Key(Constants.TraceStateHeaderName));
+            Assert.That(transportMessage.Headers, Contains.Key(Constants.TraceStateHeaderName));
+            Assert.That(transportMessage.Headers[Constants.TraceStateHeaderName], Is.Not.Null.And.Not.Empty);
         }
 
         private Dictionary<string, string> GetMessageHeaders(string messageId, string intent)
