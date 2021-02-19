@@ -26,7 +26,7 @@ namespace Rebus.Diagnostics.Incoming
             }
             finally
             {
-                StopActivity(activity, context);
+                SendAfterProcessEvent(activity, context);
             }
         }
 
@@ -39,11 +39,6 @@ namespace Rebus.Diagnostics.Incoming
 
                 var headers = message.Headers;
 
-                if (!headers.TryGetValue(Constants.TraceStateHeaderName, out var traceState))
-                {
-                    return null;
-                }
-
                 var messageType = message.GetMessageType();
 
                 var messageWrapper = new TransportMessageWrapper(message);
@@ -55,21 +50,35 @@ namespace Rebus.Diagnostics.Incoming
                     ? ActivityKind.Consumer
                     : ActivityKind.Server;
 
-                activity = Constants.ActivitySource.StartActivity($"{messageType} receive", activityKind, traceState, initialTags);
+                var activityName = $"{messageType} receive";
+                if (!headers.TryGetValue(Constants.TraceStateHeaderName, out var traceState))
+                {
+                    activity = Constants.ActivitySource.StartActivity(activityName, activityKind, default(ActivityContext), initialTags);
+                }
+                else
+                {
+                    activity = Constants.ActivitySource.StartActivity(activityName, activityKind,
+                        traceState, initialTags);
+                }
 
                 // TODO: Not sure if this is still needed
                 // DiagnosticListener.OnActivityImport(activity, context);
             }
             
-            if (DiagnosticListener.IsEnabled(BeforeProcessMessage.EventName, context))
-            {
-                DiagnosticListener.Write(BeforeProcessMessage.EventName, new BeforeProcessMessage(context, activity));
-            }
+            SendBeforeProcessEvent(context, activity);
 
             return activity;
         }
 
-        private static void StopActivity(Activity? activity, IncomingStepContext context)
+        private static void SendBeforeProcessEvent(IncomingStepContext context, Activity? activity)
+        {
+            if (DiagnosticListener.IsEnabled(BeforeProcessMessage.EventName, context))
+            {
+                DiagnosticListener.Write(BeforeProcessMessage.EventName, new BeforeProcessMessage(context, activity));
+            }
+        }
+
+        private static void SendAfterProcessEvent(Activity? activity, IncomingStepContext context)
         {
             if (DiagnosticListener.IsEnabled(AfterProcessMessage.EventName))
             {

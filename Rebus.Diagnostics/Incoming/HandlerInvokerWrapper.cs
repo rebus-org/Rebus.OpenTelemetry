@@ -26,10 +26,12 @@ namespace Rebus.Diagnostics.Incoming
                 return;
             }
 
-            var initialTags = new ActivityTagsCollection
+            var initialTags = new ActivityTagsCollection();
+            foreach (var tag in parentActivity.Tags)
             {
-                {"messaging.operation", "process"}
-            };
+                initialTags.Add(tag.Key, tag.Value);
+            }
+            initialTags["messaging.operation"] = "process";
             
             using var activity = Constants.ActivitySource.StartActivity($"{_messageType} process", parentActivity.Kind, parentActivity.Context, initialTags);
             

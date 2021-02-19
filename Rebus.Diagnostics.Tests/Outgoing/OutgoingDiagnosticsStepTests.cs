@@ -33,14 +33,18 @@ namespace Rebus.Diagnostics.Tests.Outgoing
             var context = new OutgoingStepContext(message, AmbientTransactionContext.Current, destinations);
 
             var hadActivity = false;
+            var callbackWasInvoked = false;
             
             await step.Process(context, () =>
             {
                 hadActivity = Activity.Current != null;
+                callbackWasInvoked = true;
                 return Task.CompletedTask;
             });
             
             Assert.That(hadActivity, Is.False);
+            Assert.That(message.Headers, Has.No.ContainKey(Constants.TraceStateHeaderName));
+            Assert.That(callbackWasInvoked, Is.True);
         }
 
         [Test]
@@ -74,6 +78,7 @@ namespace Rebus.Diagnostics.Tests.Outgoing
             
             Assert.That(hadActivity, Is.True);
             Assert.That(hadExpectedParent, Is.True);
+            Assert.That(message.Headers, Contains.Key(Constants.TraceStateHeaderName));
         }
 
         private Dictionary<string, string> GetMessageHeaders(string messageId, string intent)
