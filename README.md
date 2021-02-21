@@ -1,11 +1,11 @@
-# Rebus.OpenTelemetry
+﻿# Rebus.OpenTelemetry
 
-Makes Rebus emit Diagnostic traces, which OpenTelemetry can use to generate tracing. 
+Makes Rebus emit Diagnostic traces, which OpenTelemetry can be used to generate tracing. 
 
 # Usage
 
 Add the packages:
-```
+```c#
 Rebus.Diagnostics
 Rebus.OpenTelemetry
 ```
@@ -28,4 +28,4 @@ var tracerProvider = Sdk.CreateTracerProviderBuilder()
                 .Build()
 ```
 
-And then everything should just work. 
+And then everything should just work. 🙂
