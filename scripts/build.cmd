@@ -33,7 +33,7 @@ if %ERRORLEVEL% neq 0 (
  	goto exit_fail
 )
 
-dotnet build "%root%\Rebus.OpenTelemtry" -c Release
+dotnet build "%root%\Rebus.OpenTelemetry" -c Release
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
