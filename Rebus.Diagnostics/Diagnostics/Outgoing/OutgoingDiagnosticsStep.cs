@@ -24,7 +24,7 @@ namespace Rebus.Diagnostics.Outgoing
 
             try
             {
-                await next().ConfigureAwait(false);
+                await next();
             }
             finally
             {

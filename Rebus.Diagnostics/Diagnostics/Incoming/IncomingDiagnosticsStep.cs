@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using System.Web;
 using Rebus.Bus;
 using Rebus.Diagnostics.Helpers;
 using Rebus.Messages;
@@ -22,7 +20,7 @@ namespace Rebus.Diagnostics.Incoming
 
             try
             {
-                await next().ConfigureAwait(false);
+                await next();
             }
             finally
             {

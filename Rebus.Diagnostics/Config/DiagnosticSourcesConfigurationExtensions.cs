@@ -1,17 +1,18 @@
-﻿using Rebus.Config;
+﻿using System;
 using Rebus.Diagnostics.Incoming;
 using Rebus.Diagnostics.Outgoing;
 using Rebus.Pipeline;
 using Rebus.Pipeline.Receive;
 using Rebus.Pipeline.Send;
 
-namespace Rebus.Diagnostics.Configuration
+namespace Rebus.Config
 {
-    public static class OptionsConfigurerExtensions
+    public static class DiagnosticSourcesConfigurationExtensions
     {
-        
         public static void EnableDiagnosticSources(this OptionsConfigurer configurer)
         {
+            if (configurer == null) throw new ArgumentNullException(nameof(configurer));
+
             configurer.Decorate<IPipeline>(c =>
             {
                 var pipeline = c.Get<IPipeline>();
@@ -31,6 +32,5 @@ namespace Rebus.Diagnostics.Configuration
                 return injector;
             });
         }
-
     }
 }
