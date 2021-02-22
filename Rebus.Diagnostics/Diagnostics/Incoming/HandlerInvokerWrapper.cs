@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
+using Rebus.Diagnostics.Helpers;
 using Rebus.Pipeline.Receive;
 using Rebus.Sagas;
 
@@ -34,6 +35,8 @@ namespace Rebus.Diagnostics.Incoming
             initialTags["messaging.operation"] = "process";
             
             using var activity = RebusDiagnosticConstants.ActivitySource.StartActivity($"{_messageType} process", parentActivity.Kind, parentActivity.Context, initialTags);
+            
+            TagHelper.CopyBaggage(parentActivity, activity);
             
             await _handlerInvokerImplementation.Invoke();
         }
