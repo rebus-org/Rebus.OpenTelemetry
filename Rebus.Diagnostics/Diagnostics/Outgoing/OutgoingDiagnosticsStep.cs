@@ -42,6 +42,11 @@ namespace Rebus.Diagnostics.Outgoing
             {
                 headers[RebusDiagnosticConstants.TraceStateHeaderName] = activity.Id;
             }
+
+            if (!headers.ContainsKey(RebusDiagnosticConstants.BaggageHeaderName))
+            {
+                headers[RebusDiagnosticConstants.BaggageHeaderName] = JsonConvert.SerializeObject(activity.Baggage);
+            }
         }
 
         private static Activity? StartActivity(OutgoingStepContext context)
@@ -79,6 +84,8 @@ namespace Rebus.Diagnostics.Outgoing
 
                 activity = RebusDiagnosticConstants.ActivitySource.StartActivity(activityName, activityKind,
                     parentActivity.Context, initialTags);
+                
+                TagHelper.CopyBaggage(parentActivity, activity);
 
                 // TODO: Figure out if this is actually needed now
                 // DiagnosticListener.OnActivityImport(activity, context);
@@ -88,6 +95,8 @@ namespace Rebus.Diagnostics.Outgoing
 
             return activity;
         }
+
+        
 
         private static void SendBeforeSendEvent(OutgoingStepContext context)
         {

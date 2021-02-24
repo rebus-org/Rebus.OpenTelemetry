@@ -47,6 +47,8 @@ namespace Rebus.Diagnostics.Tests
                 
                 // ReSharper disable once AccessToDisposedClosure
                 eventWasReceived.Set();
+                
+                Assert.That(act.GetBaggageItem("MyBaggage"), Is.EqualTo("Hej Verden!"));
 
                 return Task.CompletedTask;
             });
@@ -59,6 +61,7 @@ namespace Rebus.Diagnostics.Tests
 
             await subscriber.Subscribe<string>();
 
+            rootActivity.AddBaggage("MyBaggage", "Hej Verden!");
             rootActivity.Start();
             await publisher.Publish("Super Duper fed besked");
             

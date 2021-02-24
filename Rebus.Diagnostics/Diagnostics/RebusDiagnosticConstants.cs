@@ -5,6 +5,8 @@ namespace Rebus.Diagnostics
     public static class RebusDiagnosticConstants
     {
         public const string TraceStateHeaderName = "rbs-ot-tracestate";
+        public const string BaggageHeaderName = "rbs-ot-correlation-context";
+        
 
         public const string ConsumerActivityName = ActivitySourceName + ".Receive";
         public const string ProducerActivityName = ActivitySourceName + ".Send";

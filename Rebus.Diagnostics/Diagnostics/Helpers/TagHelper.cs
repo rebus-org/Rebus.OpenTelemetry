@@ -21,5 +21,15 @@ namespace Rebus.Diagnostics.Helpers
 
             return initialTags;
         }
+        
+        internal static void CopyBaggage(Activity parentActivity, Activity? activity)
+        {
+            if (activity == null) return;
+            
+            foreach (var keyValuePair in parentActivity.Baggage)
+            {
+                activity?.AddBaggage(keyValuePair.Key, keyValuePair.Value);
+            }
+        }
     }
 }

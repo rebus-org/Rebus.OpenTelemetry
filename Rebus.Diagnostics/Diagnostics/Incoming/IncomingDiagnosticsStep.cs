@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Rebus.Bus;
 using Rebus.Diagnostics.Helpers;
 using Rebus.Messages;
@@ -59,6 +61,11 @@ namespace Rebus.Diagnostics.Incoming
                         traceState, initialTags);
                 }
 
+                if (activity != null)
+                {
+                    CopyBaggage(headers, activity);
+                }
+
                 // TODO: Not sure if this is still needed
                 // DiagnosticListener.OnActivityImport(activity, context);
             }
@@ -66,6 +73,20 @@ namespace Rebus.Diagnostics.Incoming
             SendBeforeProcessEvent(context, activity);
 
             return activity;
+        }
+
+        private static void CopyBaggage(Dictionary<string, string> headers, Activity activity)
+        {
+            if (headers.TryGetValue(RebusDiagnosticConstants.BaggageHeaderName, out var baggageContent))
+            {
+                var baggage =
+                    JsonConvert.DeserializeObject<IEnumerable<KeyValuePair<string, string>>>(baggageContent);
+
+                foreach (var keyValuePair in baggage)
+                {
+                    activity.AddBaggage(keyValuePair.Key, keyValuePair.Value);
+                }
+            }
         }
 
         private static void SendBeforeProcessEvent(IncomingStepContext context, Activity? activity)
