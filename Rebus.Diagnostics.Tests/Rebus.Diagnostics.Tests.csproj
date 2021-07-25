@@ -12,10 +12,12 @@
         <PackageReference Include="NUnit" Version="3.12.0" />
         <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+        <PackageReference Include="OpenTelemetry" Version="1.0.1" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Rebus.Diagnostics\Rebus.Diagnostics.csproj" />
+      <ProjectReference Include="..\Rebus.OpenTelemetry\Rebus.OpenTelemetry.csproj" />
     </ItemGroup>
 
 </Project>

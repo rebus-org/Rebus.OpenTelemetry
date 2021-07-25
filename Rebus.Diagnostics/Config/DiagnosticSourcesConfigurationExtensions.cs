@@ -23,13 +23,14 @@ namespace Rebus.Config
                     typeof(SendOutgoingMessageStep));
                 
                 var incomingStep = new IncomingDiagnosticsStep();
-                injector.OnReceive(incomingStep, PipelineRelativePosition.Before,
-                    typeof(DeserializeIncomingMessageStep));
 
                 var invokerWrapper = new IncomingDiagnosticsHandlerInvokerWrapper();
                 injector.OnReceive(invokerWrapper, PipelineRelativePosition.After, typeof(ActivateHandlersStep));
+
+                var concatenator = new PipelineStepConcatenator(injector);
+                concatenator.OnReceive(incomingStep, PipelineAbsolutePosition.Front);
                 
-                return injector;
+                return concatenator;
             });
         }
     }
