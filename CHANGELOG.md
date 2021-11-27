@@ -10,6 +10,8 @@
 ## 0.0.3
 * Fix activity context not being available in logger - thanks [zlepper]
 
+## 0.0.4
+*  Make activity kind be "internal" for the process step - thanks [zlepper]
 
 [dariogriffo]: https://github.com/dariogriffo
 [zlepper]: https://github.com/zlepper
