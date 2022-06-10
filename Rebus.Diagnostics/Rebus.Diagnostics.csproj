@@ -7,7 +7,7 @@
         <RootNamespace>Rebus</RootNamespace>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Description>Diagnostics implementation for Rebus</Description>
-        <Copyright>Copyright © 2021</Copyright>
+        <Copyright>Copyright Rebus FM ApS 2012</Copyright>
         <RepositoryUrl>https://github.com/rebus-org/Rebus.OpenTelemetry</RepositoryUrl>
         <Authors>mookid8000</Authors>
         <PackageTags>rebus open-telemetry diagnostics metrics</PackageTags>
