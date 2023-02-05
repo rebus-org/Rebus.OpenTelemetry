@@ -9,7 +9,7 @@ namespace Rebus.Config
 {
     public static class DiagnosticSourcesConfigurationExtensions
     {
-        public static void EnableDiagnosticSources(this OptionsConfigurer configurer)
+        public static OptionsConfigurer EnableDiagnosticSources(this OptionsConfigurer configurer)
         {
             if (configurer == null) throw new ArgumentNullException(nameof(configurer));
 
@@ -32,6 +32,7 @@ namespace Rebus.Config
                 
                 return concatenator;
             });
+            return configurer;
         }
     }
 }
