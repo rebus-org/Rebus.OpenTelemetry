@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -15,12 +17,31 @@ namespace Rebus.Diagnostics.Outgoing
     public class OutgoingDiagnosticsStep : IOutgoingStep
     {
         private static readonly DiagnosticSource DiagnosticListener = new DiagnosticListener(RebusDiagnosticConstants.ProducerActivityName);
+        private static readonly Meter Meter = RebusDiagnosticConstants.Meter;
+
+        private static readonly Histogram<int> _messageDelay = Meter.CreateHistogram<int>("message.delay", "milliseconds", "milliseconds delay before send");
+        private static readonly Histogram<int> _messageSize = Meter.CreateHistogram<int>("message.size", "bytes", "Size of message");
+        private static readonly Counter<int> _messageSend = Meter.CreateCounter<int>("message.send", "messages", "number of messages send");
+
+
+        private readonly Func<DateTime> _nowProvider;
+        public OutgoingDiagnosticsStep(Func<DateTime>? nowProvider = null)
+        {
+            _nowProvider = nowProvider ?? (() => DateTime.UtcNow);
+        }
 
         public async Task Process(OutgoingStepContext context, Func<Task> next)
         {
-            using var activity = StartActivity(context);
-            
-            InjectHeaders(activity, context);
+            var message = context.Load<TransportMessage>();
+
+            using var activity = StartActivity(context, message);
+
+            var typeTag = new KeyValuePair<string, object?>("type", message.GetMessageType());
+            _messageSize.Record(message.Body.Length, typeTag);
+            _messageDelay.Record((int)SentDelay(message, _nowProvider()).TotalMilliseconds, typeTag);
+            _messageSend.Add(1, typeTag);
+
+            InjectHeaders(activity, message);
 
             try
             {
@@ -32,11 +53,11 @@ namespace Rebus.Diagnostics.Outgoing
             }
         }
 
-        private static void InjectHeaders(Activity? activity, OutgoingStepContext context)
+        private static void InjectHeaders(Activity? activity, TransportMessage message)
         {
             if (activity == null) return;
             
-            var headers = context.Load<TransportMessage>().Headers;
+            var headers = message.Headers;
 
             if (!headers.ContainsKey(RebusDiagnosticConstants.TraceStateHeaderName))
             {
@@ -49,7 +70,7 @@ namespace Rebus.Diagnostics.Outgoing
             }
         }
 
-        private static Activity? StartActivity(OutgoingStepContext context)
+        private static Activity? StartActivity(OutgoingStepContext context, TransportMessage message)
         {
             var parentActivity = Activity.Current;
 
@@ -61,8 +82,6 @@ namespace Rebus.Diagnostics.Outgoing
             Activity? activity = null;
             if (RebusDiagnosticConstants.ActivitySource.HasListeners())
             {
-
-                var message = context.Load<TransportMessage>();
                 var messageType = message.GetMessageType();
 
                 var messageWrapper = new TransportMessageWrapper(message);
@@ -96,8 +115,6 @@ namespace Rebus.Diagnostics.Outgoing
             return activity;
         }
 
-        
-
         private static void SendBeforeSendEvent(OutgoingStepContext context)
         {
             if (DiagnosticListener.IsEnabled(BeforeSendMessage.EventName, context))
@@ -112,6 +129,17 @@ namespace Rebus.Diagnostics.Outgoing
             {
                 DiagnosticListener.Write(AfterSendMessage.EventName, new AfterSendMessage(context));
             }
+        }
+
+        private static TimeSpan SentDelay(TransportMessage message, DateTime date)
+        {
+            if (!message.Headers.TryGetValue(Headers.SentTime, out var sentTime) 
+                || !DateTime.TryParse(sentTime, out var sentDateTime))
+            {
+                return TimeSpan.Zero;
+            }
+
+            return date.Subtract(sentDateTime);
         }
     }
 }
