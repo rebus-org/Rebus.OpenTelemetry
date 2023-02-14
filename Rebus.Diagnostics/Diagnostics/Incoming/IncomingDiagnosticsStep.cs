@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rebus.Bus;
@@ -15,10 +16,18 @@ namespace Rebus.Diagnostics.Incoming
     {
         private static readonly DiagnosticSource DiagnosticListener =
             new DiagnosticListener(RebusDiagnosticConstants.ConsumerActivityName);
+        private static readonly Meter Meter = RebusDiagnosticConstants.Meter;
+
+        private static readonly Counter<int> _messageReceived = Meter.CreateCounter<int>("message.received", "messages", "number of messages received");
 
         public async Task Process(IncomingStepContext context, Func<Task> next)
         {
-            using var activity = StartActivity(context);
+            var message = context.Load<TransportMessage>();
+
+            using var activity = StartActivity(context, message);
+
+            var typeTag = new KeyValuePair<string, object?>("type", message.GetMessageType());
+            _messageReceived.Add(1, typeTag);
 
             try
             {
@@ -30,13 +39,11 @@ namespace Rebus.Diagnostics.Incoming
             }
         }
 
-        private static Activity? StartActivity(IncomingStepContext context)
+        private static Activity? StartActivity(IncomingStepContext context, TransportMessage message)
         {
             Activity? activity = null;
             if (RebusDiagnosticConstants.ActivitySource.HasListeners())
             {
-                var message = context.Load<TransportMessage>();
-
                 var headers = message.Headers;
 
                 var messageType = message.GetMessageType();
