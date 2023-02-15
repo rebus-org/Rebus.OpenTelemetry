@@ -18,7 +18,7 @@ namespace Rebus.Diagnostics.Incoming
             new DiagnosticListener(RebusDiagnosticConstants.ConsumerActivityName);
         private static readonly Meter Meter = RebusDiagnosticConstants.Meter;
 
-        private static readonly Counter<int> _messageReceived = Meter.CreateCounter<int>("message.received", "messages", "number of messages received");
+        private static readonly Counter<int> _messageReceived = Meter.CreateCounter<int>(RebusDiagnosticConstants.MessageReceivedMeterName, "messages", "number of messages received");
 
         public async Task Process(IncomingStepContext context, Func<Task> next)
         {
@@ -28,7 +28,7 @@ namespace Rebus.Diagnostics.Incoming
 
             var typeTag = new KeyValuePair<string, object?>("type", message.GetMessageType());
             _messageReceived.Add(1, typeTag);
-
+            
             try
             {
                 await next();

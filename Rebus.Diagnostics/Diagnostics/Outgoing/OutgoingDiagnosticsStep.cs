@@ -19,12 +19,12 @@ namespace Rebus.Diagnostics.Outgoing
         private static readonly DiagnosticSource DiagnosticListener = new DiagnosticListener(RebusDiagnosticConstants.ProducerActivityName);
         private static readonly Meter Meter = RebusDiagnosticConstants.Meter;
 
-        private static readonly Histogram<int> _messageDelay = Meter.CreateHistogram<int>("message.delay", "milliseconds", "milliseconds delay before send");
-        private static readonly Histogram<int> _messageSize = Meter.CreateHistogram<int>("message.size", "bytes", "Size of message");
-        private static readonly Counter<int> _messageSend = Meter.CreateCounter<int>("message.send", "messages", "number of messages send");
-
+        private static readonly Histogram<int> _messageDelay = Meter.CreateHistogram<int>(RebusDiagnosticConstants.MessageDelayMeterName, "milliseconds", "milliseconds delay before send");
+        private static readonly Histogram<int> _messageSize = Meter.CreateHistogram<int>(RebusDiagnosticConstants.MessageSizeMeterName, "bytes", "Size of message");
+        private static readonly Counter<int> _messageSend = Meter.CreateCounter<int>(RebusDiagnosticConstants.MessageSendMeterName, "messages", "number of messages send");
 
         private readonly Func<DateTime> _nowProvider;
+
         public OutgoingDiagnosticsStep(Func<DateTime>? nowProvider = null)
         {
             _nowProvider = nowProvider ?? (() => DateTime.UtcNow);

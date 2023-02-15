@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Rebus.Bus;
 using Rebus.Diagnostics.Outgoing;
 using Rebus.Messages;
 using Rebus.Pipeline;
 using Rebus.Pipeline.Send;
 using Rebus.Transport;
-using Rebus.Transport.InMem;
 
 namespace Rebus.Diagnostics.Tests.Outgoing
 {
@@ -91,6 +89,29 @@ namespace Rebus.Diagnostics.Tests.Outgoing
             Assert.That(transportMessage.Headers[RebusDiagnosticConstants.TraceStateHeaderName], Is.Not.Null.And.Not.Empty);
         }
 
+        [Test]
+        public async Task RecordsMessageStatistics()
+        {
+            var meterObserver = new MeterObserver();
+            
+            var step = new OutgoingDiagnosticsStep();
+
+            var headers = GetMessageHeaders("id", Headers.IntentOptions.PublishSubscribe);
+            var message = new Message(headers, new object());
+            var transportMessage = new TransportMessage(headers, Array.Empty<byte>());
+
+            var destinations = new DestinationAddresses(new List<string> { "MyQueue" });
+
+            var context = new OutgoingStepContext(message, AmbientTransactionContext.Current, destinations);
+            context.Save(transportMessage);
+
+            await step.Process(context, () => Task.CompletedTask);
+
+            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageDelayMeterName), Is.True);
+            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageSizeMeterName), Is.True);
+            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageSendMeterName), Is.True);
+        }
+
         private Dictionary<string, string> GetMessageHeaders(string messageId, string intent)
         {
             return new Dictionary<string, string>
@@ -100,11 +121,5 @@ namespace Rebus.Diagnostics.Tests.Outgoing
                 {Headers.Intent, intent}
             };
         }
-        
-        
-        // private IBus CreateBus(InMemNetwork network)
-        // {
-        //     
-        // }
     }
 }

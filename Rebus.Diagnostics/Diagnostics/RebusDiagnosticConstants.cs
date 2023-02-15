@@ -12,11 +12,16 @@ namespace Rebus.Diagnostics
         public const string ConsumerActivityName = ActivitySourceName + ".Receive";
         public const string ProducerActivityName = ActivitySourceName + ".Send";
 
+        public const string MessageDelayMeterName = MeterName + ".delay";
+        public const string MessageSizeMeterName = MeterName + ".size";
+        public const string MessageSendMeterName = MeterName + ".send";
+        public const string MessageReceivedMeterName = MeterName + ".received";
+
         public const string ActivitySourceName = "Rebus.Diagnostics";
         public const string MeterName = "Rebus.Diagnostics";
 
         public static readonly ActivitySource ActivitySource = new ActivitySource(ActivitySourceName,
-            typeof(RebusDiagnosticConstants).Assembly.GetName().Version.ToString());
+                                                                                  typeof(RebusDiagnosticConstants).Assembly.GetName().Version.ToString());
         public static readonly Meter Meter = new Meter(MeterName, 
             typeof(RebusDiagnosticConstants).Assembly.GetName().Version.ToString());
     }

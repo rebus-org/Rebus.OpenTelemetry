@@ -12,12 +12,12 @@ using OpenTelemetry.Trace;
 using Rebus.Activation;
 using Rebus.Config;
 using Rebus.Diagnostics.Incoming;
+using Rebus.Diagnostics.Tests.Outgoing;
 using Rebus.Logging;
 using Rebus.Messages;
 using Rebus.OpenTelemetry.Configuration;
 using Rebus.Pipeline;
 using Rebus.Retry.Simple;
-using Rebus.Routing.TypeBased;
 using Rebus.Transport;
 using Rebus.Transport.InMem;
 
@@ -160,6 +160,29 @@ namespace Rebus.Diagnostics.Tests.Incoming
             var warning = logger.TraceIds.Single(t => t.Level == LogLevel.Warn);
 
             Assert.That(warning.TraceId, Is.EqualTo(operationTraceId));
+        }
+
+        [Test]
+        public async Task StartsAnEntireNewActivsssityIfNoActivityIsCurrentlyActive()
+        {
+            var meterObserver = new MeterObserver();
+
+            var headers = new Dictionary<string, string>
+                          {
+                              {Headers.Type, "MyType"},
+                              {Headers.Intent, Headers.IntentOptions.PublishSubscribe},
+                              {Headers.MessageId, "MyMessage"},
+                          };
+
+            var transportMessage = new TransportMessage(headers, Array.Empty<byte>());
+
+            var scope = new RebusTransactionScope();
+            var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
+
+            var step = new IncomingDiagnosticsStep();
+            await step.Process(context, () => Task.CompletedTask);
+
+            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageReceivedMeterName), Is.True);
         }
 
         private class TestLoggerFactory : IRebusLoggerFactory
