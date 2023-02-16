@@ -12,9 +12,11 @@ namespace Rebus.Diagnostics
         public const string ConsumerActivityName = ActivitySourceName + ".Receive";
         public const string ProducerActivityName = ActivitySourceName + ".Send";
 
-        public const string MessageDelayMeterName = MeterName + ".delay";
-        public const string MessageSizeMeterName = MeterName + ".size";
+        public const string MessageSendDelayMeterName = MeterName + ".send.delay";
+        public const string MessageSendSizeMeterName = MeterName + ".send.size";
         public const string MessageSendMeterName = MeterName + ".send";
+        public const string MessageReceiveSizeMeterName = MeterName + ".received.size";
+        public const string MessageReceiveDelayMeterName = MeterName + ".received.delay";
         public const string MessageReceivedMeterName = MeterName + ".received";
 
         public const string ActivitySourceName = "Rebus.Diagnostics";

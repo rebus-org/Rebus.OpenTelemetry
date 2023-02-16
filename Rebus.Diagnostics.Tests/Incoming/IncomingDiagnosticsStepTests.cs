@@ -183,6 +183,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
             await step.Process(context, () => Task.CompletedTask);
 
             Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageReceivedMeterName), Is.True);
+            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageReceiveSizeMeterName), Is.True);
         }
 
         private class TestLoggerFactory : IRebusLoggerFactory

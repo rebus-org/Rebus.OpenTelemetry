@@ -107,8 +107,8 @@ namespace Rebus.Diagnostics.Tests.Outgoing
 
             await step.Process(context, () => Task.CompletedTask);
 
-            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageDelayMeterName), Is.True);
-            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageSizeMeterName), Is.True);
+            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageSendDelayMeterName), Is.True);
+            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageSendSizeMeterName), Is.True);
             Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageSendMeterName), Is.True);
         }
 

@@ -18,7 +18,16 @@ namespace Rebus.Diagnostics.Incoming
             new DiagnosticListener(RebusDiagnosticConstants.ConsumerActivityName);
         private static readonly Meter Meter = RebusDiagnosticConstants.Meter;
 
+        private static readonly Histogram<int> _messageDelay = Meter.CreateHistogram<int>(RebusDiagnosticConstants.MessageSendDelayMeterName, "milliseconds", "milliseconds delay before receive");
+        private static readonly Histogram<int> _messageReceivedSize = Meter.CreateHistogram<int>(RebusDiagnosticConstants.MessageReceiveSizeMeterName, "bytes", "Size of message");
         private static readonly Counter<int> _messageReceived = Meter.CreateCounter<int>(RebusDiagnosticConstants.MessageReceivedMeterName, "messages", "number of messages received");
+
+        private readonly Func<DateTime> _nowProvider;
+
+        public IncomingDiagnosticsStep(Func<DateTime>? nowProvider = null)
+        {
+            _nowProvider = nowProvider ?? (() => DateTime.UtcNow);
+        }
 
         public async Task Process(IncomingStepContext context, Func<Task> next)
         {
@@ -28,7 +37,9 @@ namespace Rebus.Diagnostics.Incoming
 
             var typeTag = new KeyValuePair<string, object?>("type", message.GetMessageType());
             _messageReceived.Add(1, typeTag);
-            
+            _messageReceivedSize.Record(message.Body.Length, typeTag);
+            _messageDelay.Record((int)ReceiveDelay(message, _nowProvider()).TotalMilliseconds, typeTag);
+
             try
             {
                 await next();
@@ -110,6 +121,17 @@ namespace Rebus.Diagnostics.Incoming
             {
                 DiagnosticListener.Write(AfterProcessMessage.EventName, new AfterProcessMessage(context, activity));
             }
+        }
+
+        private static TimeSpan ReceiveDelay(TransportMessage message, DateTime date)
+        {
+            if (!message.Headers.TryGetValue(Headers.SentTime, out var sentTime)
+                || !DateTime.TryParse(sentTime, out var sentDateTime))
+            {
+                return TimeSpan.Zero;
+            }
+
+            return date.Subtract(sentDateTime);
         }
     }
 }
