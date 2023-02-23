@@ -107,9 +107,9 @@ namespace Rebus.Diagnostics.Tests.Outgoing
 
             await step.Process(context, () => Task.CompletedTask);
 
-            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageSendDelayMeterName), Is.True);
-            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageSendSizeMeterName), Is.True);
-            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageSendMeterName), Is.True);
+            Assert.That(meterObserver.InstrumentCalled("outgoing", RebusDiagnosticConstants.MessageCountMeterNameTemplate), Is.True);
+            Assert.That(meterObserver.InstrumentCalled("outgoing", RebusDiagnosticConstants.MessageDelayMeterNameTemplate), Is.True);
+            Assert.That(meterObserver.InstrumentCalled("outgoing", RebusDiagnosticConstants.MessageSizeMeterNameTemplate), Is.True);
         }
 
         private Dictionary<string, string> GetMessageHeaders(string messageId, string intent)

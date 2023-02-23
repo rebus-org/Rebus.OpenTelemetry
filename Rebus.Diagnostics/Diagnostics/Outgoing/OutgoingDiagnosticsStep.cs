@@ -13,21 +13,54 @@ using Rebus.Pipeline.Send;
 
 namespace Rebus.Diagnostics.Outgoing
 {
+    internal class StepMeter
+    {
+        private readonly Histogram<int> _messageSize;
+        private readonly Histogram<int> _messageDelay;
+        private readonly Counter<int> _messagesCount;
+
+        public StepMeter(string direction)
+        {
+            var meter = RebusDiagnosticConstants.Meter;
+            _messageSize = meter.CreateHistogram<int>(string.Format(RebusDiagnosticConstants.MessageDelayMeterNameTemplate, direction), "bytes", "message body size");
+            _messageDelay = meter.CreateHistogram<int>(string.Format(RebusDiagnosticConstants.MessageSizeMeterNameTemplate, direction), "milliseconds", "milliseconds since creation");
+            _messagesCount = meter.CreateCounter<int>(string.Format(RebusDiagnosticConstants.MessageCountMeterNameTemplate, direction), "messages", $"number of messages {direction}");
+        }
+
+        public void Observe(TransportMessage message)
+        {
+            var messageType = message.GetMessageType();
+
+            var tags = new KeyValuePair<string, object?>("type", messageType);
+
+            _messageSize.Record(message.Body.Length, tags);
+            _messagesCount.Add(1, tags);
+
+            var delay = SentDelay(message, DateTime.UtcNow);
+            _messageDelay.Record((int)delay.TotalMilliseconds, tags);
+        }
+
+        private static TimeSpan SentDelay(TransportMessage message, DateTime date)
+        {
+            if (!message.Headers.TryGetValue(Headers.SentTime, out var sentTime)
+                || !DateTime.TryParse(sentTime, out var sentDateTime))
+            {
+                return TimeSpan.Zero;
+            }
+
+            return date.Subtract(sentDateTime);
+        }
+    }
+
     [StepDocumentation("Creates a new activity for sending the provided message and passes it along on the message")]
     public class OutgoingDiagnosticsStep : IOutgoingStep
     {
         private static readonly DiagnosticSource DiagnosticListener = new DiagnosticListener(RebusDiagnosticConstants.ProducerActivityName);
-        private static readonly Meter Meter = RebusDiagnosticConstants.Meter;
+        private readonly StepMeter _stepMeter;
 
-        private static readonly Histogram<int> _messageDelay = Meter.CreateHistogram<int>(RebusDiagnosticConstants.MessageSendDelayMeterName, "milliseconds", "milliseconds delay before send");
-        private static readonly Histogram<int> _messageSize = Meter.CreateHistogram<int>(RebusDiagnosticConstants.MessageSendSizeMeterName, "bytes", "Size of message");
-        private static readonly Counter<int> _messageSend = Meter.CreateCounter<int>(RebusDiagnosticConstants.MessageSendMeterName, "messages", "number of messages send");
-
-        private readonly Func<DateTime> _nowProvider;
-
-        public OutgoingDiagnosticsStep(Func<DateTime>? nowProvider = null)
+        public OutgoingDiagnosticsStep()
         {
-            _nowProvider = nowProvider ?? (() => DateTime.UtcNow);
+            _stepMeter = new StepMeter("outgoing");
         }
 
         public async Task Process(OutgoingStepContext context, Func<Task> next)
@@ -36,11 +69,7 @@ namespace Rebus.Diagnostics.Outgoing
 
             using var activity = StartActivity(context, message);
 
-            var typeTag = new KeyValuePair<string, object?>("type", message.GetMessageType());
-            _messageSize.Record(message.Body.Length, typeTag);
-            _messageDelay.Record((int)SentDelay(message, _nowProvider()).TotalMilliseconds, typeTag);
-            _messageSend.Add(1, typeTag);
-
+            _stepMeter.Observe(message);
             InjectHeaders(activity, message);
 
             try
@@ -129,17 +158,6 @@ namespace Rebus.Diagnostics.Outgoing
             {
                 DiagnosticListener.Write(AfterSendMessage.EventName, new AfterSendMessage(context));
             }
-        }
-
-        private static TimeSpan SentDelay(TransportMessage message, DateTime date)
-        {
-            if (!message.Headers.TryGetValue(Headers.SentTime, out var sentTime) 
-                || !DateTime.TryParse(sentTime, out var sentDateTime))
-            {
-                return TimeSpan.Zero;
-            }
-
-            return date.Subtract(sentDateTime);
         }
     }
 }

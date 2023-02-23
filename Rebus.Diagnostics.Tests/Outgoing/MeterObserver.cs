@@ -16,6 +16,9 @@ namespace Rebus.Diagnostics.Tests.Outgoing
             meterListener.Start();
         }
 
+        public bool InstrumentCalled(string direction, string template)
+            => _publishedInstruments.Any(p => p.Name == string.Format(template, direction));
+
         public bool InstrumentCalled(string name)
             => _publishedInstruments.Any(p => p.Name == name);
     }

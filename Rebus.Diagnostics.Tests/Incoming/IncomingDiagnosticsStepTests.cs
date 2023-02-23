@@ -182,8 +182,9 @@ namespace Rebus.Diagnostics.Tests.Incoming
             var step = new IncomingDiagnosticsStep();
             await step.Process(context, () => Task.CompletedTask);
 
-            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageReceivedMeterName), Is.True);
-            Assert.That(meterObserver.InstrumentCalled(RebusDiagnosticConstants.MessageReceiveSizeMeterName), Is.True);
+            Assert.That(meterObserver.InstrumentCalled("incoming", RebusDiagnosticConstants.MessageCountMeterNameTemplate), Is.True);
+            Assert.That(meterObserver.InstrumentCalled("incoming", RebusDiagnosticConstants.MessageDelayMeterNameTemplate), Is.True);
+            Assert.That(meterObserver.InstrumentCalled("incoming", RebusDiagnosticConstants.MessageSizeMeterNameTemplate), Is.True);
         }
 
         private class TestLoggerFactory : IRebusLoggerFactory

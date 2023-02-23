@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rebus.Bus;
 using Rebus.Diagnostics.Helpers;
+using Rebus.Diagnostics.Outgoing;
 using Rebus.Messages;
 using Rebus.Pipeline;
 
@@ -16,17 +16,11 @@ namespace Rebus.Diagnostics.Incoming
     {
         private static readonly DiagnosticSource DiagnosticListener =
             new DiagnosticListener(RebusDiagnosticConstants.ConsumerActivityName);
-        private static readonly Meter Meter = RebusDiagnosticConstants.Meter;
+        private readonly StepMeter _stepMeter;
 
-        private static readonly Histogram<int> _messageDelay = Meter.CreateHistogram<int>(RebusDiagnosticConstants.MessageSendDelayMeterName, "milliseconds", "milliseconds delay before receive");
-        private static readonly Histogram<int> _messageReceivedSize = Meter.CreateHistogram<int>(RebusDiagnosticConstants.MessageReceiveSizeMeterName, "bytes", "Size of message");
-        private static readonly Counter<int> _messageReceived = Meter.CreateCounter<int>(RebusDiagnosticConstants.MessageReceivedMeterName, "messages", "number of messages received");
-
-        private readonly Func<DateTime> _nowProvider;
-
-        public IncomingDiagnosticsStep(Func<DateTime>? nowProvider = null)
+        public IncomingDiagnosticsStep()
         {
-            _nowProvider = nowProvider ?? (() => DateTime.UtcNow);
+            _stepMeter = new StepMeter("incoming");
         }
 
         public async Task Process(IncomingStepContext context, Func<Task> next)
@@ -35,11 +29,8 @@ namespace Rebus.Diagnostics.Incoming
 
             using var activity = StartActivity(context, message);
 
-            var typeTag = new KeyValuePair<string, object?>("type", message.GetMessageType());
-            _messageReceived.Add(1, typeTag);
-            _messageReceivedSize.Record(message.Body.Length, typeTag);
-            _messageDelay.Record((int)ReceiveDelay(message, _nowProvider()).TotalMilliseconds, typeTag);
-
+            _stepMeter.Observe(message);
+            
             try
             {
                 await next();
@@ -121,17 +112,6 @@ namespace Rebus.Diagnostics.Incoming
             {
                 DiagnosticListener.Write(AfterProcessMessage.EventName, new AfterProcessMessage(context, activity));
             }
-        }
-
-        private static TimeSpan ReceiveDelay(TransportMessage message, DateTime date)
-        {
-            if (!message.Headers.TryGetValue(Headers.SentTime, out var sentTime)
-                || !DateTime.TryParse(sentTime, out var sentDateTime))
-            {
-                return TimeSpan.Zero;
-            }
-
-            return date.Subtract(sentDateTime);
         }
     }
 }
