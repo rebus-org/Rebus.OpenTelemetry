@@ -19,7 +19,9 @@ internal abstract class MessageWrapper
 
     public string GetIntentOption()
     {
-        return Headers[Rebus.Messages.Headers.Intent];
+        return Headers.TryGetValue(Rebus.Messages.Headers.Intent, out var header)
+                ? header
+                : Rebus.Messages.Headers.IntentOptions.PublishSubscribe;
     }
         
     internal string GetCorrectionId()
