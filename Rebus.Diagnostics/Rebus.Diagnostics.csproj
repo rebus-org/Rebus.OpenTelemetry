@@ -1,21 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>11</LangVersion>
+		<Nullable>enable</Nullable>
+		<RootNamespace>Rebus</RootNamespace>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Description>Diagnostics implementation for Rebus</Description>
+		<Copyright>Copyright Rebus FM ApS 2012</Copyright>
+		<RepositoryUrl>https://github.com/rebus-org/Rebus.OpenTelemetry</RepositoryUrl>
+		<Authors>mookid8000</Authors>
+		<PackageTags>rebus open-telemetry diagnostics metrics</PackageTags>
+		<PackageIcon>little_rebusbus2_copy-500x500.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>8</LangVersion>
-        <Nullable>enable</Nullable>
-        <RootNamespace>Rebus</RootNamespace>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <Description>Diagnostics implementation for Rebus</Description>
-        <Copyright>Copyright Rebus FM ApS 2012</Copyright>
-        <RepositoryUrl>https://github.com/rebus-org/Rebus.OpenTelemetry</RepositoryUrl>
-        <Authors>mookid8000</Authors>
-        <PackageTags>rebus open-telemetry diagnostics metrics</PackageTags>
-    </PropertyGroup>
+	<ItemGroup>
+		<None Include="..\artwork\little_rebusbus2_copy-500x500.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Rebus" Version="7.0.0" />
-        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.0" />
-    </ItemGroup>
-
+	<ItemGroup>
+		<PackageReference Include="Rebus" Version="8.0.0-alpha01" />
+		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
+	</ItemGroup>
 </Project>

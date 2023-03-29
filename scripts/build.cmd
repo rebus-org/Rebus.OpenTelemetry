@@ -27,13 +27,13 @@ if %ERRORLEVEL% neq 0 (
  	goto exit_fail
 )
 
-dotnet build "%root%\Rebus.Diagnostics" -c Release
+dotnet build "%root%\Rebus.Diagnostics" -c Release --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet build "%root%\Rebus.OpenTelemetry" -c Release
+dotnet build "%root%\Rebus.OpenTelemetry" -c Release --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail

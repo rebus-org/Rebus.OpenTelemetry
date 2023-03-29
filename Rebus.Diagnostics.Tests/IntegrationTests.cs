@@ -31,7 +31,6 @@ namespace Rebus.Diagnostics.Tests
 
             var publisher = Configure.With(publisherActivator)
                 .Transport(t => t.UseInMemoryTransport(network, "publisher"))
-                .Subscriptions(s => s.StoreInMemory(subscriberStore))
                 .Options(o => o.EnableDiagnosticSources())
                 .Start();
 
@@ -55,7 +54,6 @@ namespace Rebus.Diagnostics.Tests
 
             var subscriber = Configure.With(subscriberActivator)
                 .Transport(t => t.UseInMemoryTransport(network, "subscriber"))
-                .Subscriptions(s => s.StoreInMemory(subscriberStore))
                 .Options(o => o.EnableDiagnosticSources())
                 .Start();
 

@@ -2,15 +2,14 @@
 using OpenTelemetry.Trace;
 using Rebus.Diagnostics;
 
-namespace Rebus.OpenTelemetry.Configuration
-{
-    public static class TraceBuilderExtensions
-    {
-        public static TracerProviderBuilder AddRebusInstrumentation(this TracerProviderBuilder builder)
-        {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+namespace Rebus.OpenTelemetry.Configuration;
 
-            return builder.AddSource(RebusDiagnosticConstants.ActivitySourceName);
-        }
+public static class TraceBuilderExtensions
+{
+    public static TracerProviderBuilder AddRebusInstrumentation(this TracerProviderBuilder builder)
+    {
+        if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+        return builder.AddSource(RebusDiagnosticConstants.ActivitySourceName);
     }
 }

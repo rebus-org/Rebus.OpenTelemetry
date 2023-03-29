@@ -16,6 +16,9 @@
 ## 0.0.5
 * Update packages and framework targets - thanks [arildboifot]
 
+## 1.0.0-alpha01
+* Update to Rebus 8
+
 
 [arildboifot]: https://github.com/arildboifot
 [dariogriffo]: https://github.com/dariogriffo
