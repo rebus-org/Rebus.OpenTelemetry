@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using Rebus.Bus;
 using Rebus.Extensions;
 using Rebus.Messages;
@@ -14,8 +13,6 @@ internal abstract class MessageWrapper
     protected abstract Dictionary<string, string> Headers { get; }
 
     internal abstract string GetMessageId();
-
-    internal abstract string GetMessageType();
 
     public string GetIntentOption()
     {
@@ -38,17 +35,4 @@ internal class TransportMessageWrapper : MessageWrapper
 
     protected override Dictionary<string, string> Headers => _message.Headers;
     internal override string GetMessageId() => _message.GetMessageId();
-
-    internal override string GetMessageType() => _message.GetMessageType();
-}
-    
-internal class MessageMessageWrapper : MessageWrapper
-{
-    private readonly Message _message;
-        
-    internal MessageMessageWrapper(Message message) => _message = message;
-
-    protected override Dictionary<string, string> Headers => _message.Headers;
-    internal override string GetMessageId() => _message.GetMessageId();
-    internal override string GetMessageType() => _message.GetMessageType();
 }
