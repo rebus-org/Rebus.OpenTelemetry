@@ -16,12 +16,14 @@
 ## 0.0.5
 * Update packages and framework targets - thanks [arildboifot]
 
-## 1.0.0-alpha02
+## 1.0.0-alpha03
 * Update to Rebus 8
 * Add system.diagnostics.metrics.meter support - thanks [droosma]
+* Rebus hard dependency on Rebus' intent header - thanks [riezebosch]
 
 
 [arildboifot]: https://github.com/arildboifot
 [dariogriffo]: https://github.com/dariogriffo
 [droosma]: https://github.com/droosma
+[riezebosch]: https://github.com/riezebosch
 [zlepper]: https://github.com/zlepper
