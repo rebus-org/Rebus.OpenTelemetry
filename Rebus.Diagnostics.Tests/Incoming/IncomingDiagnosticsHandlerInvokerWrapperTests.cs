@@ -39,7 +39,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
 
             var handlerInvokers = new HandlerInvokers(message, new[] {innerInvoker});
 
-            var scope = new RebusTransactionScope();
+            using var scope = new RebusTransactionScope();
             var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
             context.Save(handlerInvokers);
 

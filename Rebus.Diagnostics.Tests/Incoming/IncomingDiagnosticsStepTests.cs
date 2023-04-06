@@ -18,6 +18,7 @@ using Rebus.Messages;
 using Rebus.OpenTelemetry.Configuration;
 using Rebus.Pipeline;
 using Rebus.Retry.Simple;
+using Rebus.Tests.Contracts.Extensions;
 using Rebus.Transport;
 using Rebus.Transport.InMem;
 
@@ -54,7 +55,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
 
             var transportMessage = new TransportMessage(headers, Array.Empty<byte>());
 
-            var scope = new RebusTransactionScope();
+            using var scope = new RebusTransactionScope();
             var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
 
             var step = new IncomingDiagnosticsStep();
@@ -83,7 +84,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
             var transportMessage = new TransportMessage(headers, Array.Empty<byte>());
 
             Activity.DefaultIdFormat = ActivityIdFormat.W3C;
-            var scope = new RebusTransactionScope();
+            using var scope = new RebusTransactionScope();
             var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
 
             var step = new IncomingDiagnosticsStep();
@@ -110,12 +111,10 @@ namespace Rebus.Diagnostics.Tests.Incoming
 
             string handlerReceivedTraceId = "";
 
-            var handleDone = new TaskCompletionSource<bool>();
             receiverActivator.Handle((string _) =>
             {
                 handlerReceivedTraceId = Activity.Current!.TraceId.ToString();
 
-                handleDone.TrySetResult(true);
                 throw new Exception("Ohh nooo");
             });
             
@@ -151,9 +150,8 @@ namespace Rebus.Diagnostics.Tests.Incoming
                 await receiver.SendLocal("hej med dig!"); 
             });
 
-            await handleDone.Task;
-            await Task.Delay(50);
-            
+            await network.WaitForNextMessageFrom("error");
+
             Assert.That(handlerReceivedTraceId, Is.EqualTo(operationTraceId));
 
             // Unhandled exception is the only message logged at warning level
@@ -173,7 +171,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
 
             var transportMessage = new TransportMessage(headers, Array.Empty<byte>());
 
-            var scope = new RebusTransactionScope();
+            using var scope = new RebusTransactionScope();
             var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
 
             var step = new IncomingDiagnosticsStep();
@@ -202,7 +200,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
 
             var transportMessage = new TransportMessage(headers, Array.Empty<byte>());
 
-            var scope = new RebusTransactionScope();
+            using var scope = new RebusTransactionScope();
             var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
 
             var step = new IncomingDiagnosticsStep();
