@@ -161,6 +161,32 @@ namespace Rebus.Diagnostics.Tests.Incoming
 
             Assert.That(warning.TraceId, Is.EqualTo(operationTraceId));
         }
+        
+        [Test]
+        public async Task DefaultsWhenIntentIsNotSet()
+        {
+            var headers = new Dictionary<string, string>
+            {
+                {Headers.Type, "MyType"},
+                {Headers.MessageId, "MyMessage"},
+            };
+
+            var transportMessage = new TransportMessage(headers, Array.Empty<byte>());
+
+            var scope = new RebusTransactionScope();
+            var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
+
+            var step = new IncomingDiagnosticsStep();
+            var callbackInvoked = false;
+            await step.Process(context, () =>
+            {
+                callbackInvoked = true;
+                Assert.That(Activity.Current!.Kind, Is.EqualTo(ActivityKind.Consumer));
+                return Task.CompletedTask;
+            });
+            
+            Assert.That(callbackInvoked);
+        }
 
         [Test]
         public async Task StartsAnEntireNewActivsssityIfNoActivityIsCurrentlyActive()

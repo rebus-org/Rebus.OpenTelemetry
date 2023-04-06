@@ -5,34 +5,33 @@ using Rebus.Pipeline;
 using Rebus.Pipeline.Receive;
 using Rebus.Pipeline.Send;
 
-namespace Rebus.Config
+namespace Rebus.Config;
+
+public static class DiagnosticSourcesConfigurationExtensions
 {
-    public static class DiagnosticSourcesConfigurationExtensions
+    public static OptionsConfigurer EnableDiagnosticSources(this OptionsConfigurer configurer)
     {
-        public static OptionsConfigurer EnableDiagnosticSources(this OptionsConfigurer configurer)
+        if (configurer == null) throw new ArgumentNullException(nameof(configurer));
+
+        configurer.Decorate<IPipeline>(c =>
         {
-            if (configurer == null) throw new ArgumentNullException(nameof(configurer));
-
-            configurer.Decorate<IPipeline>(c =>
-            {
-                var pipeline = c.Get<IPipeline>();
-                var injector = new PipelineStepInjector(pipeline);
+            var pipeline = c.Get<IPipeline>();
+            var injector = new PipelineStepInjector(pipeline);
                 
-                var outgoingStep = new OutgoingDiagnosticsStep();
-                injector.OnSend(outgoingStep, PipelineRelativePosition.Before,
-                    typeof(SendOutgoingMessageStep));
+            var outgoingStep = new OutgoingDiagnosticsStep();
+            injector.OnSend(outgoingStep, PipelineRelativePosition.Before,
+                typeof(SendOutgoingMessageStep));
                 
-                var incomingStep = new IncomingDiagnosticsStep();
+            var incomingStep = new IncomingDiagnosticsStep();
 
-                var invokerWrapper = new IncomingDiagnosticsHandlerInvokerWrapper();
-                injector.OnReceive(invokerWrapper, PipelineRelativePosition.After, typeof(ActivateHandlersStep));
+            var invokerWrapper = new IncomingDiagnosticsHandlerInvokerWrapper();
+            injector.OnReceive(invokerWrapper, PipelineRelativePosition.After, typeof(ActivateHandlersStep));
 
-                var concatenator = new PipelineStepConcatenator(injector);
-                concatenator.OnReceive(incomingStep, PipelineAbsolutePosition.Front);
+            var concatenator = new PipelineStepConcatenator(injector);
+            concatenator.OnReceive(incomingStep, PipelineAbsolutePosition.Front);
                 
-                return concatenator;
-            });
-            return configurer;
-        }
+            return concatenator;
+        });
+        return configurer;
     }
 }
