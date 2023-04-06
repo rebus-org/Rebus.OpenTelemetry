@@ -132,7 +132,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
                 .Transport(t => t.UseInMemoryTransport(network, "Receiver"))
                 .Options(o =>
                 {
-                    o.SimpleRetryStrategy(maxDeliveryAttempts: 1);
+                    o.RetryStrategy(maxDeliveryAttempts: 1);
                     o.EnableDiagnosticSources();
                 })
                 .Start();

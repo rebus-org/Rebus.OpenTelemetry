@@ -25,7 +25,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="OpenTelemetry" Version="1.4.0" />
-		<PackageReference Include="Rebus" Version="8.0.0-alpha01" />
+		<PackageReference Include="Rebus" Version="8.0.0-alpha09" />
 		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
 	</ItemGroup>
 
