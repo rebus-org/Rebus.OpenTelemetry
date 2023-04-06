@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rebus.Bus;
 using Rebus.Diagnostics.Helpers;
+using Rebus.Diagnostics.Outgoing;
 using Rebus.Messages;
 using Rebus.Pipeline;
 
@@ -15,11 +16,21 @@ namespace Rebus.Diagnostics.Incoming
     {
         private static readonly DiagnosticSource DiagnosticListener =
             new DiagnosticListener(RebusDiagnosticConstants.ConsumerActivityName);
+        private readonly StepMeter _stepMeter;
+
+        public IncomingDiagnosticsStep()
+        {
+            _stepMeter = new StepMeter("incoming");
+        }
 
         public async Task Process(IncomingStepContext context, Func<Task> next)
         {
-            using var activity = StartActivity(context);
+            var message = context.Load<TransportMessage>();
 
+            using var activity = StartActivity(context, message);
+
+            _stepMeter.Observe(message);
+            
             try
             {
                 await next();
@@ -30,13 +41,11 @@ namespace Rebus.Diagnostics.Incoming
             }
         }
 
-        private static Activity? StartActivity(IncomingStepContext context)
+        private static Activity? StartActivity(IncomingStepContext context, TransportMessage message)
         {
             Activity? activity = null;
             if (RebusDiagnosticConstants.ActivitySource.HasListeners())
             {
-                var message = context.Load<TransportMessage>();
-
                 var headers = message.Headers;
 
                 var messageType = message.GetMessageType();

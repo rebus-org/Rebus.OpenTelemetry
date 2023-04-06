@@ -25,7 +25,11 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup>
+  <ItemGroup>
+      <InternalsVisibleTo Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+	
+  <ItemGroup>
 		<PackageReference Include="Rebus" Version="8.0.0-alpha01" />
 		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
 	</ItemGroup>

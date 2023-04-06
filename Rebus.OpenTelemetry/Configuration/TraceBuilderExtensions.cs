@@ -1,4 +1,5 @@
 ﻿using System;
+
 using OpenTelemetry.Trace;
 using Rebus.Diagnostics;
 

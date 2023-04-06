@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -11,16 +13,64 @@ using Rebus.Pipeline.Send;
 
 namespace Rebus.Diagnostics.Outgoing
 {
+    internal class StepMeter
+    {
+        private readonly Histogram<int> _messageSize;
+        private readonly Histogram<int> _messageDelay;
+        private readonly Counter<int> _messagesCount;
+
+        public StepMeter(string direction)
+        {
+            var meter = RebusDiagnosticConstants.Meter;
+            _messageSize = meter.CreateHistogram<int>(string.Format(RebusDiagnosticConstants.MessageDelayMeterNameTemplate, direction), "bytes", "message body size");
+            _messageDelay = meter.CreateHistogram<int>(string.Format(RebusDiagnosticConstants.MessageSizeMeterNameTemplate, direction), "milliseconds", "milliseconds since creation");
+            _messagesCount = meter.CreateCounter<int>(string.Format(RebusDiagnosticConstants.MessageCountMeterNameTemplate, direction), "messages", $"number of messages {direction}");
+        }
+
+        public void Observe(TransportMessage message)
+        {
+            var messageType = message.GetMessageType();
+
+            var tags = new KeyValuePair<string, object?>("type", messageType);
+
+            _messageSize.Record(message.Body.Length, tags);
+            _messagesCount.Add(1, tags);
+
+            var delay = SentDelay(message, DateTime.UtcNow);
+            _messageDelay.Record((int)delay.TotalMilliseconds, tags);
+        }
+
+        private static TimeSpan SentDelay(TransportMessage message, DateTime date)
+        {
+            if (!message.Headers.TryGetValue(Headers.SentTime, out var sentTime)
+                || !DateTime.TryParse(sentTime, out var sentDateTime))
+            {
+                return TimeSpan.Zero;
+            }
+
+            return date.Subtract(sentDateTime);
+        }
+    }
+
     [StepDocumentation("Creates a new activity for sending the provided message and passes it along on the message")]
     public class OutgoingDiagnosticsStep : IOutgoingStep
     {
         private static readonly DiagnosticSource DiagnosticListener = new DiagnosticListener(RebusDiagnosticConstants.ProducerActivityName);
+        private readonly StepMeter _stepMeter;
+
+        public OutgoingDiagnosticsStep()
+        {
+            _stepMeter = new StepMeter("outgoing");
+        }
 
         public async Task Process(OutgoingStepContext context, Func<Task> next)
         {
-            using var activity = StartActivity(context);
-            
-            InjectHeaders(activity, context);
+            var message = context.Load<TransportMessage>();
+
+            using var activity = StartActivity(context, message);
+
+            _stepMeter.Observe(message);
+            InjectHeaders(activity, message);
 
             try
             {
@@ -32,11 +82,11 @@ namespace Rebus.Diagnostics.Outgoing
             }
         }
 
-        private static void InjectHeaders(Activity? activity, OutgoingStepContext context)
+        private static void InjectHeaders(Activity? activity, TransportMessage message)
         {
             if (activity == null) return;
             
-            var headers = context.Load<TransportMessage>().Headers;
+            var headers = message.Headers;
 
             if (!headers.ContainsKey(RebusDiagnosticConstants.TraceStateHeaderName))
             {
@@ -49,7 +99,7 @@ namespace Rebus.Diagnostics.Outgoing
             }
         }
 
-        private static Activity? StartActivity(OutgoingStepContext context)
+        private static Activity? StartActivity(OutgoingStepContext context, TransportMessage message)
         {
             var parentActivity = Activity.Current;
 
@@ -61,8 +111,6 @@ namespace Rebus.Diagnostics.Outgoing
             Activity? activity = null;
             if (RebusDiagnosticConstants.ActivitySource.HasListeners())
             {
-
-                var message = context.Load<TransportMessage>();
                 var messageType = message.GetMessageType();
 
                 var messageWrapper = new TransportMessageWrapper(message);
@@ -95,8 +143,6 @@ namespace Rebus.Diagnostics.Outgoing
 
             return activity;
         }
-
-        
 
         private static void SendBeforeSendEvent(OutgoingStepContext context)
         {
