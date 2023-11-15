@@ -7,19 +7,27 @@ using Rebus.Diagnostics.Outgoing;
 using Rebus.Messages;
 using Rebus.Pipeline;
 using Rebus.Pipeline.Send;
+using Rebus.Tests.Contracts;
 using Rebus.Transport;
 
 namespace Rebus.Diagnostics.Tests.Outgoing
 {
     [TestFixture]
-    public class OutgoingDiagnosticsStepTests
+    public class OutgoingDiagnosticsStepTests : FixtureBase
     {
+        RebusTransactionScope? _scope;
+
         [OneTimeSetUp]
         public static void ListenForRebus()
         {
             TestHelpers.ListenForRebus();
         }
-        
+
+        protected override void SetUp()
+        {
+            _scope = Using(new RebusTransactionScope());
+        }
+
         [Test]
         public async Task StartsNoActivityIfThereIsNoCurrentActivity()
         {
@@ -31,7 +39,7 @@ namespace Rebus.Diagnostics.Tests.Outgoing
 
             var destinations = new DestinationAddresses(new List<string> {"MyQueue"});
 
-            var context = new OutgoingStepContext(message, AmbientTransactionContext.Current, destinations);
+            var context = new OutgoingStepContext(message, _scope.TransactionContext, destinations);
             context.Save(transportMessage);
             
             var hadActivity = false;
@@ -63,7 +71,7 @@ namespace Rebus.Diagnostics.Tests.Outgoing
 
             var destinations = new DestinationAddresses(new List<string> {"MyQueue"});
 
-            var context = new OutgoingStepContext(message, AmbientTransactionContext.Current, destinations);
+            var context = new OutgoingStepContext(message, _scope.TransactionContext, destinations);
             context.Save(transportMessage);
 
             using var activity = new Activity("MyActivity");
@@ -102,7 +110,7 @@ namespace Rebus.Diagnostics.Tests.Outgoing
 
             var destinations = new DestinationAddresses(new List<string> { "MyQueue" });
 
-            var context = new OutgoingStepContext(message, AmbientTransactionContext.Current, destinations);
+            var context = new OutgoingStepContext(message, _scope.TransactionContext, destinations);
             context.Save(transportMessage);
 
             await step.Process(context, () => Task.CompletedTask);
