@@ -30,7 +30,8 @@ internal class HandlerInvokerWrapper : HandlerInvoker
         var initialTags = new ActivityTagsCollection();
         foreach (var tag in parentActivity.Tags)
         {
-            initialTags.Add(tag.Key, tag.Value);
+            if (!initialTags.ContainsKey(tag.Key))
+                initialTags.Add(tag.Key, tag.Value);
         }
         initialTags["messaging.operation"] = "process";
             
