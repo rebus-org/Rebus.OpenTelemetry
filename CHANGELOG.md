@@ -21,10 +21,12 @@
 * Add system.diagnostics.metrics.meter support - thanks [droosma]
 * Rebus hard dependency on Rebus' intent header - thanks [riezebosch]
 
-
+## 1.0.1
+* Prevent tag duplicates - thanks [pfab-io]
 
 [arildboifot]: https://github.com/arildboifot
 [dariogriffo]: https://github.com/dariogriffo
 [droosma]: https://github.com/droosma
 [riezebosch]: https://github.com/riezebosch
 [zlepper]: https://github.com/zlepper
+[pfab-io]: https://github.com/pfab-io
