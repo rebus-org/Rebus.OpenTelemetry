@@ -31,6 +31,6 @@
 	
   <ItemGroup>
 		<PackageReference Include="Rebus" Version="8.0.1" />
-		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="[6, 9)" />
+		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="[6, 10)" />
 	</ItemGroup>
 </Project>
