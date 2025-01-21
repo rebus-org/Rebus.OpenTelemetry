@@ -24,9 +24,13 @@
 ## 1.0.1
 * Prevent tag duplicates - thanks [pfab-io]
 
+## 1.1.0
+* Extend System.Diagnostics.DiagnosticSource version range to work with .NET 9 - thanks [rasmusjp]
+
 [arildboifot]: https://github.com/arildboifot
 [dariogriffo]: https://github.com/dariogriffo
 [droosma]: https://github.com/droosma
+[rasmusjp]: https://github.com/rasmusjp
 [riezebosch]: https://github.com/riezebosch
-[zlepper]: https://github.com/zlepper
 [pfab-io]: https://github.com/pfab-io
+[zlepper]: https://github.com/zlepper
