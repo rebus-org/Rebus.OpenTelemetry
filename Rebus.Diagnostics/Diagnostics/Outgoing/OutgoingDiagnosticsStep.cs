@@ -22,8 +22,8 @@ namespace Rebus.Diagnostics.Outgoing
         public StepMeter(string direction)
         {
             var meter = RebusDiagnosticConstants.Meter;
-            _messageSize = meter.CreateHistogram<int>(string.Format(RebusDiagnosticConstants.MessageDelayMeterNameTemplate, direction), "bytes", "message body size");
-            _messageDelay = meter.CreateHistogram<int>(string.Format(RebusDiagnosticConstants.MessageSizeMeterNameTemplate, direction), "milliseconds", "milliseconds since creation");
+            _messageSize = meter.CreateHistogram<int>(string.Format(RebusDiagnosticConstants.MessageSizeMeterNameTemplate, direction), "bytes", "message body size");
+            _messageDelay = meter.CreateHistogram<int>(string.Format(RebusDiagnosticConstants.MessageDelayMeterNameTemplate, direction), "milliseconds", "milliseconds since creation");
             _messagesCount = meter.CreateCounter<int>(string.Format(RebusDiagnosticConstants.MessageCountMeterNameTemplate, direction), "messages", $"number of messages {direction}");
         }
 
