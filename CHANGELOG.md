@@ -27,6 +27,11 @@
 ## 1.1.0
 * Extend System.Diagnostics.DiagnosticSource version range to work with .NET 9 - thanks [rasmusjp]
 
+## 1.1.1
+* Fix inverted message size and message delay meters - thanks [arielmoraes]
+
+
+[arielmoraes]: https://github.com/arielmoraes
 [arildboifot]: https://github.com/arildboifot
 [dariogriffo]: https://github.com/dariogriffo
 [droosma]: https://github.com/droosma
