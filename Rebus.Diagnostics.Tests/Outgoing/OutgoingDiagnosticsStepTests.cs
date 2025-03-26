@@ -15,7 +15,7 @@ namespace Rebus.Diagnostics.Tests.Outgoing
     [TestFixture]
     public class OutgoingDiagnosticsStepTests : FixtureBase
     {
-        RebusTransactionScope? _scope;
+        RebusTransactionScope _scope = null!;
 
         [OneTimeSetUp]
         public static void ListenForRebus()

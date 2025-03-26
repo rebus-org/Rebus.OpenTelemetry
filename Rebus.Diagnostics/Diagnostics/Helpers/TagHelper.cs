@@ -18,6 +18,7 @@ internal static class TagHelper
         initialTags.Add("messaging.destination_kind", kind);
         initialTags.Add("messaging.message_id", message.GetMessageId());
         initialTags.Add("messaging.conversation_id", message.GetCorrectionId());
+        initialTags.Add("rebus.message.type", message.GetMessageType());
 
         return initialTags;
     }

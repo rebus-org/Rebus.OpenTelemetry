@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Rebus.Diagnostics.Helpers;
 using Rebus.Pipeline.Receive;
@@ -34,12 +35,22 @@ internal class HandlerInvokerWrapper : HandlerInvoker
                 initialTags.Add(tag.Key, tag.Value);
         }
         initialTags["messaging.operation"] = "process";
-            
+        initialTags["rebus.handler.type"] = _handlerInvokerImplementation.Handler?.GetType().FullName ?? "Unknown handler type";
+
         using var activity = RebusDiagnosticConstants.ActivitySource.StartActivity($"{_messageType} process", ActivityKind.Internal, parentActivity.Context, initialTags);
             
         TagHelper.CopyBaggage(parentActivity, activity);
-            
-        await _handlerInvokerImplementation.Invoke();
+
+        try
+        {
+            await _handlerInvokerImplementation.Invoke();
+        }
+        catch (Exception e)
+        {
+            activity?.AddException(e);
+            activity?.SetStatus(ActivityStatusCode.Error, e.Message);
+            throw;
+        }
     }
 
     public override void SetSagaData(ISagaData sagaData)

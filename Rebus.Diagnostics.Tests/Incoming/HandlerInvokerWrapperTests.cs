@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Rebus.Diagnostics.Incoming;
@@ -39,6 +41,40 @@ namespace Rebus.Diagnostics.Tests.Incoming
 
             Assert.That(innerInvokerWasInvoked);
             Assert.That(hadActivity);
+        }
+
+        [Test]
+        public void MarksActivityAsFailedIfHandlerThrows()
+        {
+            using var activity = new Activity("MyActivity");
+
+            Activity? innerActivity = null;
+            var innerInvoker = new TestInvoker(() =>
+            {
+                innerActivity = Activity.Current;
+                throw new Exception("Look im failing");
+            });
+
+            var wrapper = new HandlerInvokerWrapper(innerInvoker, "MyMessage");
+
+            activity.Start();
+
+            Assume.That(activity, Is.SameAs(Activity.Current));
+
+            Assert.That(async () =>
+            {
+                await wrapper.Invoke();
+            }, Throws.Exception);
+
+            
+            Assert.That(innerActivity, Is.Not.Null);
+
+            Assert.That(innerActivity!.Status, Is.EqualTo(ActivityStatusCode.Error));
+            Assert.That(innerActivity!.StatusDescription, Is.EqualTo("Look im failing"));
+            Assert.That(innerActivity.Events, Has.Exactly(1).Items);
+            var ev = innerActivity.Events.Single();
+            Assert.That(ev.Tags.FirstOrDefault(t => t.Key == "exception.type").Value, Is.EqualTo("System.Exception"));
+            Assert.That(ev.Tags.FirstOrDefault(t => t.Key == "exception.message").Value, Is.EqualTo("Look im failing"));
         }
 
         [Test]
