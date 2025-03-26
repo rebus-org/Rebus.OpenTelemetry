@@ -35,7 +35,7 @@ internal class HandlerInvokerWrapper : HandlerInvoker
                 initialTags.Add(tag.Key, tag.Value);
         }
         initialTags["messaging.operation"] = "process";
-        initialTags["rebus.handler.type"] = _handlerInvokerImplementation.Handler.GetType().FullName;
+        initialTags["rebus.handler.type"] = _handlerInvokerImplementation.Handler?.GetType().FullName ?? "Unknown handler type";
 
         using var activity = RebusDiagnosticConstants.ActivitySource.StartActivity($"{_messageType} process", ActivityKind.Internal, parentActivity.Context, initialTags);
             
@@ -48,7 +48,7 @@ internal class HandlerInvokerWrapper : HandlerInvoker
         catch (Exception e)
         {
             activity?.AddException(e);
-            activity?.SetStatus(ActivityStatusCode.Error, e.ToString());
+            activity?.SetStatus(ActivityStatusCode.Error, e.Message);
             throw;
         }
     }
