@@ -30,6 +30,8 @@
 ## 1.1.1
 * Fix inverted message size and message delay meters - thanks [arielmoraes]
 
+## 1.2.0
+* Forward exceptions and add a bit more data to traces - thanks [zlepper]
 
 [arielmoraes]: https://github.com/arielmoraes
 [arildboifot]: https://github.com/arildboifot
