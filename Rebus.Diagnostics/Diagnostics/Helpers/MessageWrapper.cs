@@ -25,6 +25,11 @@ internal abstract class MessageWrapper
     {
         return Headers.GetValueOrNull(Rebus.Messages.Headers.Intent) ?? GetMessageId();
     }
+
+    internal string GetMessageType()
+    {
+        return Headers.GetValueOrNull(Rebus.Messages.Headers.Type) ?? "";
+    }
 }
 
 internal class TransportMessageWrapper : MessageWrapper
