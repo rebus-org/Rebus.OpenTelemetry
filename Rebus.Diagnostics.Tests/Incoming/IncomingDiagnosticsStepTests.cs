@@ -331,7 +331,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
         /// <summary>
         ///     Formatter function that is invoked for each object value to be rendered into a string while interpolating log lines
         /// </summary>
-        private string FormatObject(object obj, string format)
+        private string FormatObject(object obj, string? format)
         {
             if (obj is string) return $@"""{obj}""";
             if (obj is IEnumerable)
@@ -345,7 +345,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
             if (obj is DateTimeOffset) return ((DateTimeOffset) obj).ToString(format ?? "O");
             if (obj is IFormattable) return ((IFormattable) obj).ToString(format, CultureInfo.InvariantCulture);
             if (obj is IConvertible) return ((IConvertible) obj).ToString(CultureInfo.InvariantCulture);
-            return obj.ToString();
+            return obj.ToString()!;
         }
 
         #endregion

@@ -44,7 +44,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
         }
 
         [Test]
-        public async Task MarksActivityAsFailedIfHandlerThrows()
+        public void MarksActivityAsFailedIfHandlerThrows()
         {
             using var activity = new Activity("MyActivity");
 
