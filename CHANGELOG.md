@@ -33,10 +33,14 @@
 ## 1.2.0
 * Forward exceptions and add a bit more data to traces - thanks [zlepper]
 
+## 1.3.0
+* Add .NET 10 support - thanks [Freddie-H]
+
 [arielmoraes]: https://github.com/arielmoraes
 [arildboifot]: https://github.com/arildboifot
 [dariogriffo]: https://github.com/dariogriffo
 [droosma]: https://github.com/droosma
+[Freddie-H]: https://github.com/Freddie-H
 [rasmusjp]: https://github.com/rasmusjp
 [riezebosch]: https://github.com/riezebosch
 [pfab-io]: https://github.com/pfab-io
