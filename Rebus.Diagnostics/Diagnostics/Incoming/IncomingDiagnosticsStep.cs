@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Rebus.Bus;
 using Rebus.Diagnostics.Helpers;
 using Rebus.Diagnostics.Outgoing;
+using Rebus.Logging;
 using Rebus.Messages;
 using Rebus.Pipeline;
 
@@ -14,12 +15,15 @@ namespace Rebus.Diagnostics.Incoming
     [StepDocumentation("Extracts trace from the incoming message and starts an activity for it")]
     public class IncomingDiagnosticsStep : IIncomingStep
     {
+        private readonly ILog _log;
+
         private static readonly DiagnosticSource DiagnosticListener =
             new DiagnosticListener(RebusDiagnosticConstants.ConsumerActivityName);
         private readonly StepMeter _stepMeter;
 
-        public IncomingDiagnosticsStep()
+        public IncomingDiagnosticsStep(ILog log)
         {
+            _log = log;
             _stepMeter = new StepMeter("incoming");
         }
 
@@ -41,59 +45,80 @@ namespace Rebus.Diagnostics.Incoming
             }
         }
 
-        private static Activity? StartActivity(IncomingStepContext context, TransportMessage message)
+        private Activity? StartActivity(IncomingStepContext context, TransportMessage message)
         {
-            Activity? activity = null;
-            if (RebusDiagnosticConstants.ActivitySource.HasListeners())
+            try
             {
-                var headers = message.Headers;
-
-                var messageType = message.GetMessageType();
-
-                var messageWrapper = new TransportMessageWrapper(message);
-            
-                var initialTags = TagHelper.ExtractInitialTags(messageWrapper);
-                initialTags.Add("messaging.operation", "receive");
-
-                var activityKind = messageWrapper.GetIntentOption() == Headers.IntentOptions.PublishSubscribe
-                    ? ActivityKind.Consumer
-                    : ActivityKind.Server;
-
-                var activityName = $"{messageType} receive";
-                if (!headers.TryGetValue(RebusDiagnosticConstants.TraceStateHeaderName, out var traceState))
+                Activity? activity = null;
+                if (RebusDiagnosticConstants.ActivitySource.HasListeners())
                 {
-                    activity = RebusDiagnosticConstants.ActivitySource.StartActivity(activityName, activityKind, default(ActivityContext), initialTags);
-                }
-                else
-                {
-                    activity = RebusDiagnosticConstants.ActivitySource.StartActivity(activityName, activityKind,
-                        traceState, initialTags);
+                    var headers = message.Headers;
+
+                    var messageType = message.GetMessageType();
+
+                    var messageWrapper = new TransportMessageWrapper(message);
+
+                    var initialTags = TagHelper.ExtractInitialTags(messageWrapper);
+                    initialTags.Add("messaging.operation", "receive");
+
+                    var activityKind = messageWrapper.GetIntentOption() == Headers.IntentOptions.PublishSubscribe
+                        ? ActivityKind.Consumer
+                        : ActivityKind.Server;
+
+                    var activityName = $"{messageType} receive";
+                    if (!headers.TryGetValue(RebusDiagnosticConstants.TraceStateHeaderName, out var traceState))
+                    {
+                        activity = RebusDiagnosticConstants.ActivitySource.StartActivity(activityName, activityKind,
+                            default(ActivityContext), initialTags);
+                    }
+                    else
+                    {
+                        activity = RebusDiagnosticConstants.ActivitySource.StartActivity(activityName, activityKind,
+                            traceState, initialTags);
+                    }
+
+                    if (activity != null)
+                    {
+                        CopyBaggage(headers, activity);
+                    }
+
+                    // TODO: Not sure if this is still needed
+                    // DiagnosticListener.OnActivityImport(activity, context);
                 }
 
-                if (activity != null)
-                {
-                    CopyBaggage(headers, activity);
-                }
+                SendBeforeProcessEvent(context, activity);
 
-                // TODO: Not sure if this is still needed
-                // DiagnosticListener.OnActivityImport(activity, context);
+                return activity;
             }
-            
-            SendBeforeProcessEvent(context, activity);
-
-            return activity;
+            catch (Exception e)
+            {
+                _log.Warn(e, "Failed to start message activity. Continuing without");
+                return null;
+            }
         }
 
-        private static void CopyBaggage(Dictionary<string, string> headers, Activity activity)
+        private void CopyBaggage(Dictionary<string, string> headers, Activity activity)
         {
             if (headers.TryGetValue(RebusDiagnosticConstants.BaggageHeaderName, out var baggageContent))
             {
-                var baggage =
-                    JsonConvert.DeserializeObject<IEnumerable<KeyValuePair<string, string>>>(baggageContent);
-
-                foreach (var keyValuePair in baggage)
+                try
                 {
-                    activity.AddBaggage(keyValuePair.Key, keyValuePair.Value);
+                    var baggage =
+                        JsonConvert.DeserializeObject<IEnumerable<KeyValuePair<string, string>>>(baggageContent);
+
+                    if (baggage == null)
+                    {
+                        return;
+                    }
+                    
+                    foreach (var keyValuePair in baggage)
+                    {
+                        activity.AddBaggage(keyValuePair.Key, keyValuePair.Value);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log.Warn(e, "Failed to process activity baggage: {0}", baggageContent);
                 }
             }
         }
