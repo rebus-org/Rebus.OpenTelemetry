@@ -58,7 +58,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
             using var scope = new RebusTransactionScope();
             var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
 
-            var step = new IncomingDiagnosticsStep();
+            var step = new IncomingDiagnosticsStep(new TestLogger());
             var callbackInvoked = false;
             await step.Process(context, () =>
             {
@@ -87,7 +87,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
             using var scope = new RebusTransactionScope();
             var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
 
-            var step = new IncomingDiagnosticsStep();
+            var step = new IncomingDiagnosticsStep(new TestLogger());
             var callbackInvoked = false;
             await step.Process(context, () =>
             {
@@ -98,6 +98,37 @@ namespace Rebus.Diagnostics.Tests.Incoming
             });
             
             Assert.That(callbackInvoked);
+        }
+
+        [Test]
+        public async Task LogsWarningAndContinuesWhenBaggageHeaderIsInvalid()
+        {
+            var logger = new TestLogger();
+            var headers = new Dictionary<string, string>
+            {
+                {Headers.Type, "MyType"},
+                {Headers.Intent, Headers.IntentOptions.PublishSubscribe},
+                {Headers.MessageId, "MyMessage"},
+                {RebusDiagnosticConstants.BaggageHeaderName, "this-is-not-valid-json"}
+            };
+
+            var transportMessage = new TransportMessage(headers, Array.Empty<byte>());
+
+            Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+            using var scope = new RebusTransactionScope();
+            var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
+
+            var step = new IncomingDiagnosticsStep(logger);
+            var callbackInvoked = false;
+
+            await step.Process(context, () =>
+            {
+                callbackInvoked = true;
+                return Task.CompletedTask;
+            });
+
+            Assert.That(callbackInvoked, Is.True);
+            Assert.That(logger.TraceIds, Has.Some.Matches<(LogLevel Level, string Message, string TraceId)>(t => t.Level == LogLevel.Warn));
         }
 
         [Test]
@@ -174,7 +205,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
             using var scope = new RebusTransactionScope();
             var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
 
-            var step = new IncomingDiagnosticsStep();
+            var step = new IncomingDiagnosticsStep(new TestLogger());
             var callbackInvoked = false;
             await step.Process(context, () =>
             {
@@ -203,7 +234,7 @@ namespace Rebus.Diagnostics.Tests.Incoming
             using var scope = new RebusTransactionScope();
             var context = new IncomingStepContext(transportMessage, scope.TransactionContext);
 
-            var step = new IncomingDiagnosticsStep();
+            var step = new IncomingDiagnosticsStep(new TestLogger());
             await step.Process(context, () => Task.CompletedTask);
 
             Assert.That(meterObserver.InstrumentCalled("incoming", RebusDiagnosticConstants.MessageCountMeterNameTemplate), Is.True);

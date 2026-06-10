@@ -1,6 +1,7 @@
 ﻿using System;
 using Rebus.Diagnostics.Incoming;
 using Rebus.Diagnostics.Outgoing;
+using Rebus.Logging;
 using Rebus.Pipeline;
 using Rebus.Pipeline.Receive;
 using Rebus.Pipeline.Send;
@@ -21,8 +22,11 @@ public static class DiagnosticSourcesConfigurationExtensions
             var outgoingStep = new OutgoingDiagnosticsStep();
             injector.OnSend(outgoingStep, PipelineRelativePosition.Before,
                 typeof(SendOutgoingMessageStep));
-                
-            var incomingStep = new IncomingDiagnosticsStep();
+
+
+            var rebusLoggerFactory = c.Get<IRebusLoggerFactory>();
+            
+            var incomingStep = new IncomingDiagnosticsStep(rebusLoggerFactory.GetLogger<IncomingDiagnosticsStep>());
 
             var invokerWrapper = new IncomingDiagnosticsHandlerInvokerWrapper();
             injector.OnReceive(invokerWrapper, PipelineRelativePosition.After, typeof(ActivateHandlersStep));
