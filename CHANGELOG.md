@@ -36,6 +36,9 @@
 ## 1.3.0
 * Add .NET 10 support - thanks [Freddie-H]
 
+## 1.4.0
+* Livrem og seler - thanks [zlepper]
+
 [arielmoraes]: https://github.com/arielmoraes
 [arildboifot]: https://github.com/arildboifot
 [dariogriffo]: https://github.com/dariogriffo
