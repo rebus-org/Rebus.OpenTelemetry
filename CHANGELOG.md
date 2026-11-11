@@ -39,11 +39,15 @@
 ## 1.4.0
 * Livrem og seler - thanks [zlepper]
 
+## 1.5.0
+* .NET 11 support - thanks [janode]
+
 [arielmoraes]: https://github.com/arielmoraes
 [arildboifot]: https://github.com/arildboifot
 [dariogriffo]: https://github.com/dariogriffo
 [droosma]: https://github.com/droosma
 [Freddie-H]: https://github.com/Freddie-H
+[janode]: https://github.com/janode
 [rasmusjp]: https://github.com/rasmusjp
 [riezebosch]: https://github.com/riezebosch
 [pfab-io]: https://github.com/pfab-io
